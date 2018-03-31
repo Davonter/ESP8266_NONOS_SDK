@@ -1,15 +1,15 @@
 path_data:
-empty:set firmware path;0x7e000;
-empty:set firmware path;0x00000;
+choosed:D:\Code\ESP8266_NONOS_SDK\bin\eagle.flash.bin;0x00000;
+choosed:D:\Code\ESP8266_NONOS_SDK\bin\eagle.irom0text.bin;0x10000;
 empty:set firmware path;0x3e000;
 empty:set firmware path;0x40000;
 empty:;;
 empty:;;
 empty:;;
-default_path:.;
+default_path:D:\Code\ESP8266_NONOS_SDK\bin;
 COM1:
-com_port1:16
-baudrate1:6
+com_port1:3
+baudrate1:4
 COM2:
 com_port2:6
 baudrate2:2

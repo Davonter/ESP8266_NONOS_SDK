@@ -90,10 +90,10 @@ struct packet_info {
     unsigned int wlan_len;             /* packet length */
     unsigned int wlan_type;            /* frame control field */
     unsigned int pkt_fc;			   // Ô­Ê¼µÄFrameControl
-    unsigned char wlan_src[MAC_LEN];
-    unsigned char wlan_dst[MAC_LEN];
-    unsigned char wlan_bssid[MAC_LEN];
-    char wlan_essid[MAX_ESSID_LEN];
+    unsigned char wlan_src[6];
+    unsigned char wlan_dst[6];
+    unsigned char wlan_bssid[6];
+    char wlan_essid[32];
     u_int64_t wlan_tsf;                /* timestamp from beacon */
     unsigned int wlan_bintval;         /* beacon interval */
     unsigned int wlan_mode;            /* AP, STA or IBSS */

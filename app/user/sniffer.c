@@ -38,6 +38,8 @@ uint16_t seq_n = 0;
 uint8_t packet_buffer[64];
 
 uint8_t temp_mac[6] = {0xc4, 0x6a, 0xb7, 0x9f, 0xcc, 0x34};
+uint8_t full_mac[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
+uint8_t test_mac[6] = {0x8c, 0x0d, 0x76, 0xc8, 0xb0, 0x8e};
 
 struct packet_info newpacket;
 
@@ -118,15 +120,29 @@ deauth(void *arg)
 static void ICACHE_FLASH_ATTR
 promisc_cb(uint8_t *buf, uint16_t len)
 {
-    if (len == 12)
+    if (len == 12)   //该包属于不可信数据包，它无法表示包所属的发送和接收者，也无法判断该包的包长长度，因此不计算该包
     {
         struct RxControl *sniffer = (struct RxControl*) buf;
     }
-    else if (len == 128)
+    else if (len == 128)  //该包属于管理包，这是我们重点关注的包
     {
         struct sniffer_buf2 *sniffer = (struct sniffer_buf2*) buf;
+        if(!os_memcmp(full_mac, &sniffer->buf[4], 6))
+        {
+        	return;
+        }
+        if(!os_memcmp(test_mac, &sniffer->buf[4], 6))
+        {
+            //os_printf("Catch the mac!\r\n");
+            printmac(sniffer->buf, 4);
+            printmac(sniffer->buf, 10);
+            os_printf("|%u|%d\r\n", sniffer->rx_ctrl.channel, sniffer->rx_ctrl.rssi);
+        }
+/*        printmac(sniffer->buf, 4);
+        printmac(sniffer->buf, 10);
+        os_printf("|%u|%d\r\n", sniffer->rx_ctrl.channel, sniffer->rx_ctrl.rssi);*/
     }
-    else
+    else   //数据包
     {
         struct sniffer_buf *sniffer = (struct sniffer_buf*) buf;
         int i=0;
@@ -136,20 +152,28 @@ promisc_cb(uint8_t *buf, uint16_t len)
 		if(0==os_memcmp(temp_mac, &sniffer->buf[4], 6)){
 			return;
 		}
-
+        if(!os_memcmp(test_mac, &sniffer->buf[4], 6))
+        {
+            //os_printf("Catch the mac!\r\n");
+			printmac(sniffer->buf, 4);
+			printmac(sniffer->buf, 10);
+			os_printf("|%u", sniffer->rx_ctrl.channel);
+			os_printf("|%d", sniffer->rx_ctrl.rssi);
+			os_printf("\n");
+        }
 		// 缓存上次的MAC，避免重复打印
 		for (i=0; i<6; i++){
 			temp_mac[i] = sniffer->buf[i+4];
 		}
 
-		#if SNIFFER_TEST
+		//#if SNIFFER_TEST
 			//os_printf("-> %3d: %d", wifi_get_channel(), len);
-			printmac(sniffer->buf, 4);
+/*			printmac(sniffer->buf, 4);
 			printmac(sniffer->buf, 10);
+			os_printf("|%u", sniffer->rx_ctrl.channel);
 			os_printf("|%d", sniffer->rx_ctrl.rssi);
-			os_printf("|%d", sniffer->rx_ctrl.rate);
-			os_printf("\n");
-		#endif
+			os_printf("\n");*/
+		//#endif
 
 		// 判断client
         //for (i=0; i<6; i++) if (sniffer->buf[i+4] != client[i]) return;
@@ -228,7 +252,7 @@ sniffer_init_in_system_init_done(void)
     wifi_promiscuous_enable(0);
     //u8 mac[6] = {0xc4, 0x6a, 0xb7, 0x9f, 0xcc, 0x34};
     //wifi_promiscuous_set_mac(mac);
-    wifi_set_promiscuous_rx_cb(promisc_cb_2);
+    wifi_set_promiscuous_rx_cb(promisc_cb);
     wifi_promiscuous_enable(1);
 }
 
